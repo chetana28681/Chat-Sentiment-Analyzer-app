@@ -1,0 +1,568 @@
+s2 b
+const http = require("http");
+const fs = require("fs");
+const url = require("url");
+
+http.createServer((req, res) => {
+
+  const q = url.parse(req.url, true);
+
+  if (q.pathname === "/") {
+    res.writeHead(200, { "Content-Type": "text/html" });
+
+    res.end(`
+      <h2>Append File Content</h2>
+      <form action="/append" method="get">
+        File 1: <input type="text" name="f1"><br><br>
+        File 2: <input type="text" name="f2"><br><br>
+        <button type="submit">Append</button>
+      </form>
+    `);
+  }
+
+  else if (q.pathname === "/append") {
+
+    let f1 = q.query.f1;
+    let f2 = q.query.f2;
+
+    fs.readFile(f1, "utf8", (err, data) => {
+      if (err) {
+        res.end("Error reading File 1");
+        return;
+      }
+
+      fs.appendFile(f2, data, (err) => {
+        if (err) {
+          res.end("Error writing File 2");
+          return;
+        }
+
+        res.end("File 1 content appended to File 2 successfully!");
+      });
+
+    });
+  }
+
+}).listen(3000);
+
+console.log("Server running at http://localhost:3000");
+
+
+
+
+s 3 a
+const express = require("express");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+const app = express();
+app.use(express.json());
+
+const users = []; // temporary storage
+
+// Register
+app.post("/register", async (req, res) => {
+  const hash = await bcrypt.hash(req.body.password, 10);
+  users.push({ email: req.body.email, password: hash });
+  res.send("User Registered");
+});
+
+// Login
+app.post("/login", async (req, res) => {
+  const user = users.find(u => u.email === req.body.email);
+  if (!user) return res.send("User not found");
+
+  const ok = await bcrypt.compare(req.body.password, user.password);
+  if (!ok) return res.send("Wrong password");
+
+  const token = jwt.sign({ email: user.email }, "secret");
+  res.json({ token });
+});
+
+// Protected route
+app.get("/home", (req, res) => {
+  res.send("Welcome to Home Page");
+});
+
+app.listen(3000, () => console.log("Server running on 3000"));
+
+
+
+
+s 5a
+
+const http = require("http");
+
+http.createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "text/html" });
+
+  res.end(`
+    <h2>Upload Form</h2>
+    <form action="/" method="post" enctype="multipart/form-data">
+      <input type="file" name="file"><br><br>
+      <button type="submit">Upload</button>
+    </form>
+  `);
+
+}).listen(3000);
+
+console.log("Server running at http://localhost:3000");
+
+
+
+s5b
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+
+<body ng-controller="myCtrl">
+
+<h2>Login Validation</h2>
+
+Username:
+<input type="text" ng-model="username"><br><br>
+
+Password:
+<input type="password" ng-model="password"><br><br>
+
+<button ng-click="check()">Submit</button>
+
+<script>
+var app = angular.module("myApp", []);
+
+app.controller("myCtrl", function($scope) {
+
+  $scope.check = function() {
+
+    if (!$scope.username) {
+      alert("Enter username");
+    }
+    else if ($scope.username.length < 3) {
+      alert("Username is too short");
+    }
+    else if (!$scope.password || $scope.password.length < 8) {
+      alert("Password must be minimum 8 characters");
+    }
+    else {
+      alert("Valid username");
+    }
+
+  };
+
+});
+</script>
+
+</body>
+</html>
+
+
+
+s 10 1
+
+const mysql = require("mysql");
+
+// connect to MySQL server (no database yet)
+const con = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: ""
+});
+
+con.connect((err) => {
+  if (err) throw err;
+  console.log("Connected to MySQL");
+
+  // Create database
+  con.query("CREATE DATABASE college", (err) => {
+    if (err) throw err;
+    console.log("Database created");
+
+    // Use database and create table
+    con.changeUser({ database: "college" }, (err) => {
+      if (err) throw err;
+
+      const sql = `
+        CREATE TABLE Teacher (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          name VARCHAR(50),
+          salary INT
+        )
+      `;
+
+      con.query(sql, (err) => {
+        if (err) throw err;
+        console.log("Table created");
+      });
+    });
+  });
+});
+
+
+
+
+14 1
+
+const http = require("http");
+
+http.createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "text/html" });
+  res.end("<h1>Simple Web Server using Node.js</h1>");
+}).listen(3000);
+
+console.log("Server running at http://localhost:3000");
+
+
+
+14 2
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Employee Registration</title>
+</head>
+
+<body>
+
+<h2>Employee Registration Form</h2>
+
+<form onsubmit="return validateForm()">
+
+  Name:
+  <input type="text" required><br><br>
+
+  DOB:
+  <input type="date" id="dob" required><br><br>
+
+  Joining Date:
+  <input type="date" id="join" required><br><br>
+
+  Salary:
+  <input type="number" id="salary" required><br><br>
+
+  <button type="submit">Submit</button>
+
+</form>
+
+<script>
+function validateForm() {
+
+  let dob = new Date(document.getElementById("dob").value);
+  let join = new Date(document.getElementById("join").value);
+  let salary = document.getElementById("salary").value;
+  let today = new Date();
+
+  // DOB validation
+  if (dob > today) {
+    alert("DOB cannot be in future");
+    return false;
+  }
+
+  // Joining date validation
+  if (join > today) {
+    alert("Joining date cannot be in future");
+    return false;
+  }
+
+  if (join < dob) {
+    alert("Joining date must be after DOB");
+    return false;
+  }
+
+  // Salary validation
+  if (salary <= 0) {
+    alert("Salary must be positive");
+    return false;
+  }
+
+  alert("Form submitted successfully");
+  return true;
+}
+</script>
+
+</body>
+</html>
+
+
+s16 a
+
+const http = require("http");
+
+const recipes = [
+  { name: "Tea", ingredients: "Water, Tea Powder, Sugar, Milk" },
+  { name: "Poha", ingredients: "Poha, Onion, Turmeric, Salt" },
+  { name: "Maggi", ingredients: "Noodles, Water, Masala" }
+];
+
+http.createServer((req, res) => {
+
+  res.writeHead(200, { "Content-Type": "text/html" });
+
+  let html = "<h1>Recipe Book</h1>";
+
+  recipes.forEach(r => {
+    html += `<h3>${r.name}</h3><p>${r.ingredients}</p><hr>`;
+  });
+
+  res.end(html);
+
+}).listen(3000);
+
+console.log("Server running at http://localhost:3000");
+
+
+
+16 b
+const events = require("events");
+
+const eventEmitter = new events.EventEmitter();
+
+// Callback functions
+function startHandler() {
+  console.log("Start event triggered");
+}
+
+function stopHandler() {
+  console.log("Stop event triggered");
+}
+
+// Register events
+eventEmitter.on("start", startHandler);
+eventEmitter.on("stop", stopHandler);
+
+// Main loop (event simulation)
+setTimeout(() => {
+  eventEmitter.emit("start");
+}, 1000);
+
+setTimeout(() => {
+  eventEmitter.emit("stop");
+}, 3000);
+
+
+17 a
+
+<!DOCTYPE html>
+<html ng-app="myApp">
+
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.js"></script>
+</head>
+
+<body>
+
+<h2>M.Sc CS Sem-II Syllabus</h2>
+
+<a href="#!dbms">DBMS</a> |
+<a href="#!java">Java</a> |
+<a href="#!python">Python</a>
+
+<div ng-view></div>
+
+<script>
+var app = angular.module("myApp", ["ngRoute"]);
+
+app.config(function($routeProvider) {
+  $routeProvider
+  .when("/dbms", {
+    template: "<h3>DBMS</h3><p>ER Model, SQL, Normalization</p>"
+  })
+  .when("/java", {
+    template: "<h3>Java</h3><p>OOP Concepts, JDBC, Collections</p>"
+  })
+  .when("/python", {
+    template: "<h3>Python</h3><p>Basics, OOP, Data Science Intro</p>"
+  })
+  .otherwise({
+    redirectTo: "/dbms"
+  });
+});
+</script>
+
+</body>
+</html>
+
+
+
+
+17b
+
+
+<!DOCTYPE html>
+<html ng-app="myApp">
+
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+
+<body ng-controller="myCtrl">
+
+<h2>Student Details</h2>
+
+<table border="1" cellpadding="10">
+
+  <tr>
+    <th>Roll No</th>
+    <th>Name</th>
+    <th>City</th>
+    <th>Marks</th>
+  </tr>
+
+  <tr ng-repeat="s in students">
+    <td>{{s.roll}}</td>
+    <td>{{s.name}}</td>
+    <td>{{s.city}}</td>
+    <td>{{s.marks}}</td>
+  </tr>
+
+</table>
+
+<script>
+var app = angular.module("myApp", []);
+
+app.controller("myCtrl", function($scope) {
+
+  $scope.students = [
+    {roll: 1, name: "Amit", city: "Mumbai", marks: 85},
+    {roll: 2, name: "Riya", city: "Pune", marks: 78},
+    {roll: 3, name: "John", city: "Delhi", marks: 92},
+    {roll: 4, name: "Sara", city: "Nagpur", marks: 88},
+    {roll: 5, name: "Karan", city: "Nashik", marks: 75},
+    {roll: 6, name: "Neha", city: "Thane", marks: 81},
+    {roll: 7, name: "Raj", city: "Pune", marks: 79},
+    {roll: 8, name: "Meena", city: "Mumbai", marks: 90},
+    {roll: 9, name: "Vikram", city: "Delhi", marks: 84},
+    {roll: 10, name: "Anita", city: "Goa", marks: 87}
+  ];
+
+});
+</script>
+
+</body>
+</html>
+
+
+
+18 a
+const express = require("express");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+const app = express();
+app.use(express.json());
+
+let users = []; // temporary storage
+
+// REGISTER
+app.post("/register", async (req, res) => {
+  const hash = await bcrypt.hash(req.body.password, 10);
+  users.push({ email: req.body.email, password: hash });
+  res.send("User Registered");
+});
+
+// LOGIN
+app.post("/login", async (req, res) => {
+  const user = users.find(u => u.email === req.body.email);
+  if (!user) return res.send("User not found");
+
+  const valid = await bcrypt.compare(req.body.password, user.password);
+  if (!valid) return res.send("Invalid password");
+
+  const token = jwt.sign({ email: user.email }, "secretkey");
+  res.json({ message: "Login Success", token });
+});
+
+app.listen(3000, () => console.log("Server running on 3000"));
+
+
+
+18b
+
+
+
+
+19 2
+
+<!DOCTYPE html>
+<html ng-app="myApp">
+
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+
+<body ng-controller="myCtrl">
+
+<h2>Student Registration Form</h2>
+
+<form name="form1" ng-submit="submitForm()">
+
+  Name:
+  <input type="text" ng-model="user.name"><br><br>
+
+  Mobile:
+  <input type="text" ng-model="user.mobile"><br><br>
+
+  Pincode:
+  <input type="text" ng-model="user.pincode"><br><br>
+
+  Email:
+  <input type="text" ng-model="user.email"><br><br>
+
+  <button type="submit">Submit</button>
+
+</form>
+
+<script>
+var app = angular.module("myApp", []);
+
+app.controller("myCtrl", function($scope) {
+
+  $scope.user = {};
+
+  $scope.submitForm = function() {
+
+    // Name validation (only letters)
+    var namePattern = /^[A-Za-z ]+$/;
+
+    // Mobile validation (10 digits)
+    var mobilePattern = /^[0-9]{10}$/;
+
+    // Pincode validation (6 digits)
+    var pinPattern = /^[0-9]{6}$/;
+
+    // Email validation (basic)
+    var emailPattern = /^[^@]+@[^@]+\.[^@]+$/;
+
+    if (!namePattern.test($scope.user.name)) {
+      alert("Name should contain only characters");
+      return;
+    }
+
+    if (!mobilePattern.test($scope.user.mobile)) {
+      alert("Mobile number must be 10 digits");
+      return;
+    }
+
+    if (!pinPattern.test($scope.user.pincode)) {
+      alert("Pincode must be 6 digits");
+      return;
+    }
+
+    if (!emailPattern.test($scope.user.email)) {
+      alert("Invalid email format");
+      return;
+    }
+
+    alert("Form Submitted Successfully!");
+  };
+
+});
+</script>
+
+</body>
+</html>
+
+
+
+
